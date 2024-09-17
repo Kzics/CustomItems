@@ -19,13 +19,13 @@ public class ConsumableItem extends ItemStack {
     public static NamespacedKey itemKey = new NamespacedKey(CustomItems.getInstance(), "consumable_items");
     public static NamespacedKey effectsKey = new NamespacedKey(CustomItems.getInstance(), "consumable_effects");
 
-    public ConsumableItem(String name, String id, List<Component> lore, Material material, int use, int cooldown, ActivationType activationType, TargetInfo targetInfo, ConsumableEffects effects) {
+    public ConsumableItem(String name, String id, List<String> lore, Material material, int use, int cooldown, ActivationType activationType, TargetInfo targetInfo, ConsumableEffects effects) {
         super(material);
 
         ItemMeta meta = getItemMeta();
 
         meta.displayName(Component.text(name));
-        meta.lore(lore);
+        meta.setLore(lore);
 
         meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING
                 , String.format("%s;%s;%s;%s;%s;%s",id, use, cooldown
