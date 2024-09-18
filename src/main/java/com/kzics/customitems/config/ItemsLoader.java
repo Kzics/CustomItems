@@ -1,5 +1,6 @@
 package com.kzics.customitems.config;
 
+import com.kzics.customitems.CustomItems;
 import com.kzics.customitems.enums.ActivationType;
 import com.kzics.customitems.enums.TargetType;
 import com.kzics.customitems.items.ConsumableItem;
@@ -12,6 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +21,28 @@ import java.util.Map;
 public class ItemsLoader {
 
 
-    public ItemsLoader() {
-
+    private final CustomItems customItems;
+    public ItemsLoader(CustomItems customItems) {
+        this.customItems = customItems;
     }
 
+
+    public void loadItems(){
+        File itemsFolder = new File(customItems.getDataFolder(), "items");
+
+        if(!itemsFolder.exists()) itemsFolder.mkdir();
+
+
+        File[] files = itemsFolder.listFiles(new YamlFilter());
+        if(files == null) return;
+
+        for (File file : files){
+            System.out.println(file.getName());
+            YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+
+            loadItem(configuration);
+        }
+    }
 
     public void loadItem(YamlConfiguration configuration) {
         final String name = configuration.getString("name");
@@ -52,17 +72,38 @@ public class ItemsLoader {
 
         List<PotionEffect> potionEffects = new ArrayList<>();
 
-        for (String key : configuration.getConfigurationSection("effects").getKeys(false)) {
+        List<?> effectsList = configuration.getList("effects");
 
-            PotionEffectType type = PotionEffectType.getByName(configuration.getString("effects." + key + ".type"));
-            int duration = configuration.getInt("effects." + key + ".duration");
-            int amplifier = configuration.getInt("effects." + key + ".amplifier");
+        for (Object effectObj : effectsList) {
+            if (effectObj instanceof Map) {
+                Map<?, ?> effectMap = (Map<?, ?>) effectObj;
 
-            potionEffects.add(new PotionEffect(type, duration, amplifier));
+                // Convertissez explicitement en Map<String, Object>
+                String typeStr = (String) effectMap.get("type");
+                int duration = (int) effectMap.get("duration");
+                int amplifier = (int) effectMap.get("amplifier");
+
+                // Obtenez le type de PotionEffect
+                PotionEffectType type = PotionEffectType.getByName(typeStr);
+                if (type != null) {
+                    // Créez un effet de potion et l'ajoutez à la liste
+                    PotionEffect potionEffect = new PotionEffect(type, duration * 20, amplifier); // Multiplier par 20 pour obtenir la durée en ticks
+                    potionEffects.add(potionEffect);
+                } else {
+                    // Gérer le cas où le type de potion est introuvable
+                    throw new IllegalArgumentException("PotionEffectType invalide: " + typeStr);
+                }
+            } else {
+                // Gérer le cas où un objet dans la liste n'est pas un Map
+                throw new IllegalArgumentException("Chaque effet doit être un objet de type Map.");
+            }
         }
-
         final ConsumableEffects consumableEffects = new ConsumableEffects(potionEffects.toArray(potionEffects.toArray(new PotionEffect[0])));
 
         ConsumableItem consumableItem = new ConsumableItem(name, id, lore, material, uses, cooldown, activationType, targetInfo, consumableEffects);
+
+        customItems.getItemsManager().addItem(id, consumableItem);
+
+        customItems.getLogger().info("Successfully loaded " + id + " item!");
     }
 }
