@@ -6,6 +6,7 @@ import com.kzics.customitems.obj.ConsumableEffects;
 import com.kzics.customitems.obj.TargetInfo;
 import com.kzics.customitems.utils.SerializerUtils;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +14,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ConsumableItem extends ItemStack {
 
@@ -24,15 +28,62 @@ public class ConsumableItem extends ItemStack {
 
         ItemMeta meta = getItemMeta();
 
-        meta.displayName(Component.text(name));
-        meta.setLore(lore);
+        String displayName = replacePlaceholders(name, use, cooldown, activationType, targetInfo);
+        meta.displayName(parseColoredText(displayName));
+
+        List<Component> loreComponents = lore.stream()
+                .map(line -> replacePlaceholders(line, use, cooldown, activationType, targetInfo))
+                .map(this::parseColoredText)
+                .collect(Collectors.toList());
+
+        meta.lore(loreComponents);
 
         meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING
-                , String.format("%s;%s;%s;%s;%s;%s",id, use, cooldown
-                        ,activationType, targetInfo.targetType(), targetInfo.radius()));
+                , String.format("%s;%s;%s;%s;%s;%s", id, use, cooldown
+                        , activationType, targetInfo.targetType(), targetInfo.radius()));
 
         meta.getPersistentDataContainer().set(effectsKey, PersistentDataType.STRING, SerializerUtils.serializeEffects(effects));
 
         setItemMeta(meta);
     }
+
+    private String replacePlaceholders(String text, int uses, int cooldown, ActivationType activationType, TargetInfo targetInfo) {
+        return text
+                .replace("{use}", String.valueOf(uses))
+                .replace("{cooldown}", String.valueOf(cooldown))
+                .replace("{activation}", activationType.getFormatted())
+                .replace("{target}", targetInfo.targetType().getFormatted())
+                .replace("{radius}", String.valueOf(targetInfo.radius()));
+    }
+
+    private Component parseColoredText(String text) {
+        Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
+        Matcher matcher = pattern.matcher(text);
+        Component component = Component.text("");
+
+        int lastEnd = 0;
+        while (matcher.find()) {
+            String colorCode = matcher.group();
+            int start = matcher.start();
+            int end = matcher.end();
+
+            if (start > lastEnd) {
+                component = component.append(Component.text(text.substring(lastEnd, start)));
+            }
+
+            if (end < text.length()) {
+                String coloredText = text.substring(end, text.indexOf("#", end) == -1 ? text.length() : text.indexOf("#", end));
+                component = component.append(Component.text(coloredText, TextColor.fromHexString(colorCode)));
+                lastEnd = end + coloredText.length();
+            }
+        }
+
+        if (lastEnd < text.length()) {
+            component = component.append(Component.text(text.substring(lastEnd)));
+        }
+
+        return component;
+    }
+
+
 }
