@@ -14,6 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,21 +34,21 @@ public class ConsumableItem extends ItemStack {
 
         List<Component> loreComponents = lore.stream()
                 .map(line -> replacePlaceholders(line, use, cooldown, activationType, targetInfo))
-                .map(this::parseColoredText)
+                .map(ConsumableItem::parseColoredText)
                 .collect(Collectors.toList());
 
         meta.lore(loreComponents);
 
         meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING
-                , String.format("%s;%s;%s;%s;%s;%s", id, use, cooldown
-                        , activationType, targetInfo.targetType(), targetInfo.radius()));
+                , String.format("%s;%s;%s;%s;%s;%s;%s", id, use, cooldown
+                        , activationType, targetInfo.targetType(), targetInfo.radius(), UUID.randomUUID()));
 
         meta.getPersistentDataContainer().set(effectsKey, PersistentDataType.STRING, SerializerUtils.serializeEffects(effects));
 
         setItemMeta(meta);
     }
 
-    private String replacePlaceholders(String text, int uses, int cooldown, ActivationType activationType, TargetInfo targetInfo) {
+    public static String replacePlaceholders(String text, int uses, int cooldown, ActivationType activationType, TargetInfo targetInfo) {
         return text
                 .replace("{use}", String.valueOf(uses))
                 .replace("{cooldown}", String.valueOf(cooldown))
@@ -56,7 +57,7 @@ public class ConsumableItem extends ItemStack {
                 .replace("{radius}", String.valueOf(targetInfo.radius()));
     }
 
-    private Component parseColoredText(String text) {
+    public static Component parseColoredText(String text) {
         Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
         Matcher matcher = pattern.matcher(text);
         Component component = Component.text("");

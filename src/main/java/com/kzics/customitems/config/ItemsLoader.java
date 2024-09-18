@@ -100,7 +100,7 @@ public class ItemsLoader {
         }
         final ConsumableEffects consumableEffects = new ConsumableEffects(potionEffects.toArray(potionEffects.toArray(new PotionEffect[0])));
 
-        ConsumableItem consumableItem = new ConsumableItem(name, id, lore, material, uses, cooldown, activationType, targetInfo, consumableEffects);
+        ConsumableItemConfig consumableItem = new ConsumableItemConfig(name, id, lore, material, uses, cooldown, activationType, targetInfo, consumableEffects);
 
         customItems.getItemsManager().addItem(id, consumableItem);
 
