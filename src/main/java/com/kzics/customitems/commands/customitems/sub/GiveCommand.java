@@ -2,19 +2,18 @@ package com.kzics.customitems.commands.customitems.sub;
 
 import com.kzics.customitems.CustomItems;
 import com.kzics.customitems.commands.ICommand;
-import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
-public class ReloadCommand implements ICommand {
+public class GiveCommand implements ICommand {
 
     private final CustomItems customItems;
-    public ReloadCommand(final CustomItems customItems){
+    public GiveCommand(CustomItems customItems){
         this.customItems = customItems;
     }
 
     @Override
     public String getName() {
-        return "reload";
+        return "give";
     }
 
     @Override
@@ -24,13 +23,14 @@ public class ReloadCommand implements ICommand {
 
     @Override
     public String getPermission() {
-        return "customitems.reload";
+        return "customitems.give";
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
 
-        sender.sendMessage(Component.text("Successfully reloaded items!"));
-        customItems.getItemsLoader().loadItems();
+        if(!(args.length != 2)) return;
+
+
     }
 }
