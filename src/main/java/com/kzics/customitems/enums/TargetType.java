@@ -6,7 +6,7 @@ public enum TargetType {
     AREA("Area");
 
 
-    private String formatted;
+    private final String formatted;
     TargetType(String formatted){
         this.formatted = formatted;
     }

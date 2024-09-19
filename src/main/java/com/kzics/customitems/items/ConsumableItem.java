@@ -23,6 +23,7 @@ public class ConsumableItem extends ItemStack {
 
     public static NamespacedKey itemKey = new NamespacedKey(CustomItems.getInstance(), "consumable_items");
     public static NamespacedKey effectsKey = new NamespacedKey(CustomItems.getInstance(), "consumable_effects");
+    public static NamespacedKey cooldownKey = new NamespacedKey(CustomItems.getInstance(), "consumable_cooldown");
 
     public ConsumableItem(String name, String id, List<String> lore, Material material, int use, int cooldown, ActivationType activationType, TargetInfo targetInfo, ConsumableEffects effects) {
         super(material);
@@ -44,6 +45,9 @@ public class ConsumableItem extends ItemStack {
                         , activationType, targetInfo.targetType(), targetInfo.radius(), UUID.randomUUID()));
 
         meta.getPersistentDataContainer().set(effectsKey, PersistentDataType.STRING, SerializerUtils.serializeEffects(effects));
+
+        long cooldownExpiryTime = System.currentTimeMillis() + (cooldown * 1000L);
+        meta.getPersistentDataContainer().set(cooldownKey, PersistentDataType.LONG, cooldownExpiryTime);
 
         setItemMeta(meta);
     }
