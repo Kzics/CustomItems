@@ -44,7 +44,9 @@ public class PlayerListeners implements Listener {
         final Player player = event.getPlayer();
 
         for (ConsumableItemConfig consumableItem : customItems.getItemsManager().getItems().values()) {
-            player.getInventory().addItem(new ConsumableItem(consumableItem.getName(), consumableItem.getId(), consumableItem.getLore(), consumableItem.getMaterial(), consumableItem.getUse(), consumableItem.getCooldown(), consumableItem.getActivationType(), consumableItem.getTargetInfo(), consumableItem.getConsumableEffects()));
+            player.getInventory().addItem(new ConsumableItem(consumableItem.getName(), consumableItem.getId(), consumableItem.getLore(), consumableItem.getMaterial(),
+                    consumableItem.getUse(), consumableItem.getCooldown(), consumableItem.getActivationType(),
+                    consumableItem.getTargetInfo(), consumableItem.getConsumableEffects(), consumableItem.isAffectingClanMember(), consumableItem.getSound()));
         }
     }
 
@@ -66,6 +68,7 @@ public class PlayerListeners implements Listener {
         long cooldown = Long.parseLong(itemInfo[2]);
         ActivationType activationType = ActivationType.valueOf(itemInfo[3]);
         int usesLeft = Integer.parseInt(itemInfo[1]);
+        Sound sound = Sound.valueOf(itemInfo[8]);
 
         if (usesLeft <= 0) {
             destroyItem(player, itemStack);
@@ -88,7 +91,6 @@ public class PlayerListeners implements Listener {
             return;
         }
 
-        // Start cooldown for this item type
         setCooldown(player, itemId, cooldown);
 
         usesLeft -= 1;
@@ -98,11 +100,12 @@ public class PlayerListeners implements Listener {
 
         applyEffectsBasedOnTarget(player, null, targetType, effects, itemInfo);
 
+        player.getWorld().playSound(player.getLocation(), sound, 5f,5f);
         if (usesLeft <= 0) {
             destroyItem(player, itemStack);
         } else {
             ConsumableItemConfig config = customItems.getItemsManager().getItem(itemId);
-            ConsumableItem consumableItem = new ConsumableItem(config.getName(), config.getId(), config.getLore(), config.getMaterial(), usesLeft, config.getCooldown(), config.getActivationType(), config.getTargetInfo(), config.getConsumableEffects());
+            ConsumableItem consumableItem = new ConsumableItem(config.getName(), config.getId(), config.getLore(), config.getMaterial(), usesLeft, config.getCooldown(), config.getActivationType(), config.getTargetInfo(), config.getConsumableEffects(), config.isAffectingClanMember(), config.getSound());
             player.getInventory().setItemInMainHand(consumableItem);
         }
     }
@@ -162,23 +165,34 @@ public class PlayerListeners implements Listener {
             destroyItem(player, itemStack);
         } else {
             ConsumableItemConfig config = customItems.getItemsManager().getItem(itemId);
-            ConsumableItem consumableItem = new ConsumableItem(config.getName(), config.getId(), config.getLore(), config.getMaterial(), usesLeft, config.getCooldown(), config.getActivationType(), config.getTargetInfo(), config.getConsumableEffects());
+            ConsumableItem consumableItem = new ConsumableItem(config.getName(), config.getId(), config.getLore(), config.getMaterial(), usesLeft, config.getCooldown(), config.getActivationType(), config.getTargetInfo(), config.getConsumableEffects(), config.isAffectingClanMember(), config.getSound());
             player.getInventory().setItemInMainHand(consumableItem);
         }
     }
 
     private void applyEffectsBasedOnTarget(Player player, Player target, TargetType targetType, ConsumableEffects effects, String[] itemInfo) {
+        boolean affectClanMembers = Boolean.parseBoolean(itemInfo[7]);
+
         switch (targetType) {
             case SELF:
                 EffectManager.applyEffectsToSelf(player, Arrays.asList(effects.getPotionEffects()));
                 break;
             case AREA:
                 double radius = Double.parseDouble(itemInfo[5]);
-                EffectManager.applyEffectsInArea(player, Arrays.asList(effects.getPotionEffects()), radius);
+                Collection<Player> playersInRange = player.getLocation().getNearbyPlayers(radius);
+
+                for (Player p : playersInRange) {
+                    if(p.getUniqueId().equals(player.getUniqueId())) continue;
+                    if (!affectClanMembers || affectClanMembers) {
+                        EffectManager.applyEffectsInArea(p, Arrays.asList(effects.getPotionEffects()), radius);
+                    }
+                }
                 break;
             case TARGET:
                 if (target != null) {
-                    EffectManager.applyEffectsOnHit(target, Arrays.asList(effects.getPotionEffects()));
+                    if (!affectClanMembers || affectClanMembers) {
+                        EffectManager.applyEffectsOnHit(target, Arrays.asList(effects.getPotionEffects()));
+                    }
                 }
                 break;
             default:

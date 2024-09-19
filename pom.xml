@@ -19,6 +19,10 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
 
@@ -28,6 +32,14 @@
             <artifactId>paper-api</artifactId>
             <version>1.19.2-R0.1-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.UlrichBR</groupId>
+            <artifactId>UClansV7-API</artifactId>
+            <version>7.13.0-R1</version>
+        </dependency>
+
+
     </dependencies>
 
 </project>

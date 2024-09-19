@@ -7,6 +7,7 @@ import com.kzics.customitems.items.ConsumableItem;
 import com.kzics.customitems.obj.ConsumableEffects;
 import com.kzics.customitems.obj.TargetInfo;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -51,6 +52,7 @@ public class ItemsLoader {
         final int uses = configuration.getInt("uses");
         final int cooldown = configuration.getInt("cooldown"); //Cooldown in seconds
         final Material material = Material.valueOf(configuration.getString("material"));
+        final Sound sound = Sound.valueOf(configuration.getString("sound"));
 
         ActivationType activationType;
         TargetType targetType;
@@ -73,6 +75,8 @@ public class ItemsLoader {
         List<PotionEffect> potionEffects = new ArrayList<>();
 
         List<?> effectsList = configuration.getList("effects");
+        boolean affectClanMember = configuration.getBoolean("affect-clan-member");
+
 
         for (Object effectObj : effectsList) {
             if (effectObj instanceof Map) {
@@ -83,24 +87,20 @@ public class ItemsLoader {
                 int duration = (int) effectMap.get("duration");
                 int amplifier = (int) effectMap.get("amplifier");
 
-                // Obtenez le type de PotionEffect
                 PotionEffectType type = PotionEffectType.getByName(typeStr);
                 if (type != null) {
-                    // Créez un effet de potion et l'ajoutez à la liste
                     PotionEffect potionEffect = new PotionEffect(type, duration * 20, amplifier); // Multiplier par 20 pour obtenir la durée en ticks
                     potionEffects.add(potionEffect);
                 } else {
-                    // Gérer le cas où le type de potion est introuvable
-                    throw new IllegalArgumentException("PotionEffectType invalide: " + typeStr);
+                    throw new IllegalArgumentException("PotionEffectType invalid: " + typeStr);
                 }
             } else {
-                // Gérer le cas où un objet dans la liste n'est pas un Map
-                throw new IllegalArgumentException("Chaque effet doit être un objet de type Map.");
+                throw new IllegalArgumentException("Error .");
             }
         }
         final ConsumableEffects consumableEffects = new ConsumableEffects(potionEffects.toArray(potionEffects.toArray(new PotionEffect[0])));
 
-        ConsumableItemConfig consumableItem = new ConsumableItemConfig(name, id, lore, material, uses, cooldown, activationType, targetInfo, consumableEffects);
+        ConsumableItemConfig consumableItem = new ConsumableItemConfig(name, id, lore, material, uses, cooldown, activationType, targetInfo, consumableEffects, affectClanMember, sound );
 
         customItems.getItemsManager().addItem(id, consumableItem);
 

@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -25,7 +26,7 @@ public class ConsumableItem extends ItemStack {
     public static NamespacedKey effectsKey = new NamespacedKey(CustomItems.getInstance(), "consumable_effects");
     public static NamespacedKey cooldownKey = new NamespacedKey(CustomItems.getInstance(), "consumable_cooldown");
 
-    public ConsumableItem(String name, String id, List<String> lore, Material material, int use, int cooldown, ActivationType activationType, TargetInfo targetInfo, ConsumableEffects effects) {
+    public ConsumableItem(String name, String id, List<String> lore, Material material, int use, int cooldown, ActivationType activationType, TargetInfo targetInfo, ConsumableEffects effects, boolean affectClanMembers, Sound sound) {
         super(material);
 
         ItemMeta meta = getItemMeta();
@@ -41,8 +42,8 @@ public class ConsumableItem extends ItemStack {
         meta.lore(loreComponents);
 
         meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING
-                , String.format("%s;%s;%s;%s;%s;%s;%s", id, use, cooldown
-                        , activationType, targetInfo.targetType(), targetInfo.radius(), UUID.randomUUID()));
+                , String.format("%s;%s;%s;%s;%s;%s;%s;%s;%s", id, use, cooldown
+                        , activationType, targetInfo.targetType(), targetInfo.radius(), UUID.randomUUID(), affectClanMembers, sound.name()));
 
         meta.getPersistentDataContainer().set(effectsKey, PersistentDataType.STRING, SerializerUtils.serializeEffects(effects));
 
