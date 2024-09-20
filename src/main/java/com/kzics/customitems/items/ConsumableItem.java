@@ -14,6 +14,7 @@ import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class ConsumableItem extends ItemStack {
         meta.lore(loreComponents);
 
         meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING
-                , String.format("%s;%s;%s;%s;%s;%s;%s;%s;%s", id, use, cooldown
+                , String.format("%s;%s;%s;%s;%s;%s;%s;%s;%s;%s", id, use, cooldown
                         , activationType, targetInfo.targetType(), targetInfo.radius(), UUID.randomUUID(), affectClanMembers, sound.name()));
 
         meta.getPersistentDataContainer().set(effectsKey, PersistentDataType.STRING, SerializerUtils.serializeEffects(effects));

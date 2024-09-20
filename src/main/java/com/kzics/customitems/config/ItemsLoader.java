@@ -33,6 +33,7 @@ public class ItemsLoader {
         File[] files = itemsFolder.listFiles(new YamlFilter());
         if (files == null) return;
 
+
         for (File file : files) {
             System.out.println(file.getName());
             YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);

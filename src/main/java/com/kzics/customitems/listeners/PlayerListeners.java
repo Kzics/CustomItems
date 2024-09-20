@@ -10,17 +10,17 @@ import com.kzics.customitems.obj.ConsumableEffects;
 import com.kzics.customitems.utils.SerializerUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +31,7 @@ public class PlayerListeners implements Listener {
 
     private final Map<UUID, Map<String, Long>> itemCooldowns = new ConcurrentHashMap<>();
     private final Map<Player, Long> lastMessageTime = new HashMap<>();
+    private HashMap<UUID, List<PotionEffectType>> playerImmunities = new HashMap<>();
 
     private static final long COOLDOWN_DURATION = 5000;
 
@@ -184,14 +185,14 @@ public class PlayerListeners implements Listener {
 
                 for (Player p : playersInRange) {
                     if(p.getUniqueId().equals(player.getUniqueId())) continue;
-                    if (!affectClanMembers || affectClanMembers) {
+                    if (!affectClanMembers || customItems.getClanUtils().isInClan(player, target)) {
                         EffectManager.applyEffectsOnHit(p, Arrays.asList(effects.getPotionEffects()));
                     }
                 }
                 break;
             case TARGET:
                 if (target != null) {
-                    if (!affectClanMembers || affectClanMembers) {
+                    if (!affectClanMembers || customItems.getClanUtils().isInClan(player, target)) {
                         EffectManager.applyEffectsOnHit(target, Arrays.asList(effects.getPotionEffects()));
                     }
                 }
@@ -220,4 +221,18 @@ public class PlayerListeners implements Listener {
         Map<String, Long> playerCooldowns = itemCooldowns.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>());
         playerCooldowns.put(itemId, System.currentTimeMillis() + (cooldown * 1000));
     }
-}
+
+
+    @EventHandler
+    public void onPotionEffect(EntityPotionEffectEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            if (event.getAction() == EntityPotionEffectEvent.Action.ADDED) {
+                List<PotionEffectType> immunities = playerImmunities.get(player.getUniqueId());
+
+                if (immunities != null && immunities.contains(event.getModifiedType())) {
+                    player.removePotionEffect(event.getModifiedType());
+                    player.sendMessage("Vous êtes immunisé contre l'effet: " + event.getModifiedType().getName());
+                }
+            }
+        }
+    }}
