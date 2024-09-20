@@ -1,6 +1,7 @@
 package com.kzics.customitems.items;
 
 import com.kzics.customitems.CustomItems;
+import com.kzics.customitems.config.ConsumableItemConfig;
 import com.kzics.customitems.enums.ActivationType;
 import com.kzics.customitems.obj.ConsumableEffects;
 import com.kzics.customitems.obj.TargetInfo;
@@ -26,6 +27,9 @@ public class ConsumableItem extends ItemStack {
     public static NamespacedKey effectsKey = new NamespacedKey(CustomItems.getInstance(), "consumable_effects");
     public static NamespacedKey cooldownKey = new NamespacedKey(CustomItems.getInstance(), "consumable_cooldown");
 
+    public ConsumableItem(ConsumableItemConfig config){
+        this(config.getName(), config.getId(), config.getLore(), config.getMaterial(), config.getUse(), config.getCooldown(), config.getActivationType(), config.getTargetInfo(), config.getConsumableEffects(), config.isAffectingClanMember(), config.getSound());
+    }
     public ConsumableItem(String name, String id, List<String> lore, Material material, int use, int cooldown, ActivationType activationType, TargetInfo targetInfo, ConsumableEffects effects, boolean affectClanMembers, Sound sound) {
         super(material);
 

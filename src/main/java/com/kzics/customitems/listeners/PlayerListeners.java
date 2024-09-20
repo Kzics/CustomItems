@@ -29,7 +29,6 @@ public class PlayerListeners implements Listener {
 
     private final CustomItems customItems;
 
-    // Cooldown map storing player UUIDs and the item type's cooldown end time
     private final Map<UUID, Map<String, Long>> itemCooldowns = new ConcurrentHashMap<>();
     private final Map<Player, Long> lastMessageTime = new HashMap<>();
 
@@ -151,12 +150,12 @@ public class PlayerListeners implements Listener {
         // Start cooldown for this item type
         setCooldown(player, itemId, cooldown);
 
+
         int usesLeft = Integer.parseInt(itemInfo[1]);
-        if (usesLeft <= 0) {
-            destroyItem(player, itemStack);
-        }
 
         TargetType targetType = TargetType.valueOf(itemInfo[4]);
+        Sound sound = Sound.valueOf(itemInfo[8]);
+
         ConsumableEffects effects = SerializerUtils.deserializeEffects(itemStack.getItemMeta().getPersistentDataContainer().get(ConsumableItem.effectsKey, PersistentDataType.STRING));
 
         applyEffectsBasedOnTarget(player, target, targetType, effects, itemInfo);
@@ -164,6 +163,8 @@ public class PlayerListeners implements Listener {
         if (usesLeft - 1 <= 0) {
             destroyItem(player, itemStack);
         } else {
+            usesLeft -= 1;
+            player.getWorld().playSound(player.getLocation(), sound, 5f, 5f);
             ConsumableItemConfig config = customItems.getItemsManager().getItem(itemId);
             ConsumableItem consumableItem = new ConsumableItem(config.getName(), config.getId(), config.getLore(), config.getMaterial(), usesLeft, config.getCooldown(), config.getActivationType(), config.getTargetInfo(), config.getConsumableEffects(), config.isAffectingClanMember(), config.getSound());
             player.getInventory().setItemInMainHand(consumableItem);
@@ -184,7 +185,7 @@ public class PlayerListeners implements Listener {
                 for (Player p : playersInRange) {
                     if(p.getUniqueId().equals(player.getUniqueId())) continue;
                     if (!affectClanMembers || affectClanMembers) {
-                        EffectManager.applyEffectsInArea(p, Arrays.asList(effects.getPotionEffects()), radius);
+                        EffectManager.applyEffectsOnHit(p, Arrays.asList(effects.getPotionEffects()));
                     }
                 }
                 break;

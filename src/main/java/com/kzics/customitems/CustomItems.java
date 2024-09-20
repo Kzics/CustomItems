@@ -1,5 +1,6 @@
 package com.kzics.customitems;
 
+import com.kzics.customitems.commands.customitems.CustomItemsCommand;
 import com.kzics.customitems.config.ItemsLoader;
 import com.kzics.customitems.listeners.PlayerListeners;
 import com.kzics.customitems.manager.ItemsManager;
@@ -33,6 +34,11 @@ public class CustomItems extends JavaPlugin {
         clanUtils = new ClanUtils(clanAPI);
 
 
+
+        CustomItemsCommand customItemsCommand = new CustomItemsCommand(this);
+
+        getCommand("consumableitems").setExecutor(customItemsCommand);
+        getCommand("consumableitems").setTabCompleter(customItemsCommand);
 
         getServer().getPluginManager().registerEvents(new PlayerListeners(this), this);
     }

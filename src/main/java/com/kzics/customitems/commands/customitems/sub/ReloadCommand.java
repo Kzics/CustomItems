@@ -3,6 +3,7 @@ package com.kzics.customitems.commands.customitems.sub;
 import com.kzics.customitems.CustomItems;
 import com.kzics.customitems.commands.ICommand;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 
 public class ReloadCommand implements ICommand {
@@ -30,7 +31,7 @@ public class ReloadCommand implements ICommand {
     @Override
     public void execute(CommandSender sender, String[] args) {
 
-        sender.sendMessage(Component.text("Successfully reloaded items!"));
+        sender.sendMessage(Component.text("Successfully reloaded items!").color(NamedTextColor.RED));
         customItems.getItemsLoader().loadItems();
     }
 }

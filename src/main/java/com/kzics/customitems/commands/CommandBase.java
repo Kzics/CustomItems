@@ -1,6 +1,7 @@
 package com.kzics.customitems.commands;
 
-import com.kzics.vbounty.utils.ColorsUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -26,7 +27,7 @@ public abstract class CommandBase implements CommandExecutor {
             ICommand subCommand = subCommands.get(args[0].toLowerCase());
             if (subCommand != null) {
                 if(!sender.hasPermission(subCommand.getPermission())){
-                    sender.sendMessage(ColorsUtil.translate.apply("You don't have the permission"));
+                    sender.sendMessage(Component.text("You don't have the permission").color(NamedTextColor.RED));
                     return true;
                 }
                 subCommand.execute(sender, args);

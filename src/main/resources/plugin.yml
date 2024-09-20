@@ -2,3 +2,8 @@ main: com.kzics.customitems.CustomItems
 version: 1.0.0
 name: CustomItems
 api-version: 1.20
+commands:
+  consumableitems:
+    description: Consumable items commands
+    aliases:
+      - ci
